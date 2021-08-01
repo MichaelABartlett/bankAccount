@@ -1,45 +1,95 @@
 'use strict'
 
-
+// here we are setting up to build a bankAccount
+// it will be a javaScript object
+// accountNumber and owner will be strings
+// the transactions will be an array listing out each individual charge or deposit
 class bankAccount {
     // the constructor is connecting and making the key in the bank account object
-    constructor(accountNumber, owner){
-        // the word after the 'this.' is connected to the same word in the constructor
+    constructor(iaccountNumber, iowner){
+        // the word after the 'this.' is equal to the same word in the constructor
         //  it can be anything as long as those two match
-        //  this is also true for the second 'this.' word
-        this.accountNumber = accountNumber;
-        this.owner = owner;
-        // this word does not have a parameter in the constructor to match with
+        this.accountNumber = iaccountNumber;
+        this.owner = iowner;
+        // the this word below does not have a parameter in the constructor to match with
         // because all we are doing is setting up a empty array and not passing 
-        // anything into it
+        // anything into it from the constructor
         this.transactions = [];
     }
 
+    // here we are creating a function to keep up with the balance of the account
     balance(){
-        let sum = 0;
+        // creating a variable to use in function, it is only available in this function, it is not global
+        let total = 0;
+        // looping thru the transactions array and passing each transaction into the calculation below
         for(let i = 0; i < this.transactions.length; i++){
-            sum += this.transactions[i].amount;
+            // calculating the total for each loop of the array
+            total = total + this.transactions[i].amount;
         }
-        return sum;
+        // returning the total for the balance() function
+        return total;
     }
 
+    // this function is going to see if a charge is legal and if so process it
     charge(payee, amt){
+        // first we run the balance() function and get the balance
+        // then pass that total into a variable to be used in the current function
         let currentBalance = this.balance();
-        if(amt <= currentBalance){
+        // here we are checking to see if the ammount charged is more than the currentBalance of the account
+        // if the amount is less than the currentBalance then the punction proceeds
+        // if not it does nothing
+        if(amt <= currentBalance){   
+            // creating a variable that equals the new transaction
+            // it is multiplied by '-1' to turn the amount charged into a negative number
             let chargeTrans = new transaction(-1 * amt, payee);
+            // here we are updating the transactions array for this.account
+            // it is just ADDING a new element to the array, increasing the length by 1, 
+            // it is NOT calculating the actual total for the account
             this.transactions.push(chargeTrans);
         }
+        //*********************************************************************************************************
+        // it could have also been written as below
+        //
+        // if(currentBalance >= amt){   
+        //     let chargeTrans = new transaction(-1 * amt, payee);
+        //     this.transactions.push(chargeTrans);
+        // }
+        // ******************************************************************************************************
+        // it could also be written as below
+        //
+        // if(amt > currentBalance){   
+            
+        // } else {
+        //         let chargeTrans = new transaction(-1 * amt, payee);
+        //         this.transactions.push(chargeTrans);
+        // }
+
     }
 
+    // this function adds a deposit to the transactions array, it does NOT calculte a new total for the account
+    // it works similar to the charge() function 
     deposit(amt){
+        // first we make sure the amount being added is not a negative number
+        // if it is not then we do nothing
         if(amt > 0){
+            // if the deposit is a positive number then we proceed
+            // a variable is created so we can work with "this" new transaction in the function
+            // "this" transaction information is then passed into the variable
             let depositTrans = new transaction(amt, 'deposit');
+            // the deposit is then added to the transactions array, the length of the array is increased by 1
+            // the balance of the account is not upadated
+            // there is NO math happening in this function
             this.transactions.push(depositTrans);
         }
+        // this function could be written in several lwas just like we did in the charge() function
     }
 
 }
 
+// here we are building each transaction
+// it will be a javaScript object
+// amount will be a number, only because that is what is entered, if a string was entered it would throw an error
+// payee is going to be a string
 class transaction {
     constructor(amount, payee){
         this.amount = amount;
@@ -48,108 +98,6 @@ class transaction {
     }
 }
 
-
-// test below
-if(typeof describe === 'function'){
-    const assert = require('assert');
-
-    describe('test the account creation', function(){
-        it('should create a new account correctly', function(){
-            let acct1 = new bankAccount('xx8644', 'Big Man');
-            assert.strictEqual(acct1.owner, 'Big Man');
-            assert.strictEqual(acct1.accountNumber, 'xx8644');
-            assert.strictEqual(acct1.transactions.length, 0);
-            assert.strictEqual(acct1.balance(), 0);
-        });
-
-    });
-
-    describe('test the account balance', function(){
-        it('should create a new transaction correctly', function(){
-            let acct1 = new bankAccount('xx8644', 'Big Man');
-            assert.strictEqual(acct1.balance(), 0);
-            acct1.deposit(100);  // putting 100 in the acct1 account
-            assert.strictEqual(acct1.balance(), 100);
-            acct1.charge('Target', 10);
-            assert.strictEqual(acct1.balance(), 90);
-        });
-
-        it('check that a negative deposit can not be made', function(){
-            let acct1 = new bankAccount('xx8644', 'Big Man');
-            assert.strictEqual(acct1.balance(), 0);
-            acct1.deposit(100);  // putting 100 in the acct1 account
-            assert.strictEqual(acct1.balance(), 100);
-            acct1.deposit(-30);  // trying to put in a -30 into account
-            assert.strictEqual(acct1.balance(), 100);
-        });
-
-        it('should not allow charging to overdraft', function(){
-            let acct1 = new bankAccount('xx8644', 'Big Man');
-            assert.strictEqual(acct1.balance(), 0);
-            acct1.charge('Target', 30) // this should not happen because the balance before the charge was 0
-            assert.strictEqual(acct1.balance(), 0)
-        });
-
-        it('should allow a refund', function(){
-            let acct1 = new bankAccount('xx8644', 'Big Man');
-            assert.strictEqual(acct1.balance(), 0);
-            acct1.charge('Target', -30) // target is giving a 30 refund
-            assert.strictEqual(acct1.balance(), 30)
-        });
-
-
-    });
-
-    describe('testing transaction creation', function(){
-        it('shoud create a deposite transaction correctly', function(){
-            let t1 = new transaction(50, 'deposit');
-            assert.strictEqual(t1.amount, 50);
-            assert.strictEqual(t1.payee, 'deposit');
-            assert.notStrictEqual(t1.date, undefined); // this is testing to make sure something was passed in, not checking if the date is correct
-            assert.notStrictEqual(t1.date, null);
-
-        })
-        it('shoud create a charge transaction correctly', function(){
-            let t1 = new transaction(-35.45, 'Target'); // Target is where it got charged
-            assert.strictEqual(t1.amount, -35.45);
-            assert.strictEqual(t1.payee, 'Target');
-            assert.notStrictEqual(t1.date, undefined); // this is testing to make sure something was passed in, not checking if the date is correct
-            assert.notStrictEqual(t1.date, null);
-
-        })
-    })
-
-    describe('bunch or transactions and test', function(){
-        let testAccount = new bankAccount('864HON864', 'Wild Bill');
-        it('test account created correctly', function(){
-            assert.strictEqual('864HON864', testAccount.accountNumber);
-            assert.strictEqual('Wild Bill', testAccount.owner);
-            assert.strictEqual(testAccount.balance(), 0);
-        })
-
-        it('test deposit', function(){
-            testAccount.deposit(30);
-            testAccount.deposit(20);
-            testAccount.deposit(-3);
-            testAccount.deposit(34.25);
-            testAccount.deposit(10000.45);
-            assert.strictEqual(10084.70, testAccount.balance());
-            testAccount.charge('cleanOut', 10084.70);
-            assert.strictEqual(0, testAccount.balance())
-        })
-
-        it('test charges', function(){
-            testAccount.deposit(10000);
-            testAccount.charge('HEB', 40);
-            testAccount.charge('ACE hardware', 10.32);
-            testAccount.charge('A Line Auto Parts', 40);
-            testAccount.charge('Tractor Supply', -20); // this is negative to get a refund
-            assert.strictEqual(9929.68, testAccount.balance());
-            assert.strictEqual(10, testAccount.transactions.length);
-            console.log('transactions: ', testAccount.transactions)  // just logging the transactions
-            console.log('transactions: ', testAccount.transactions[2])  // pulling out just one transaction
-
-        })
-    })
-}
-
+// we are making the module, in this case 'class bankAccount and class transaction' 
+// available to another file
+module.exports = {bankAccount,transaction};
